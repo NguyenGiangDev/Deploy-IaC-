@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Di chuyển sang thư mục terraform
-cd /home/nguyengiang/IaC/terraform || exit
+cd "$(dirname "$0")/../terraform" || exit
 
 # Kiểm tra output tồn tại
 if ! terraform output -json vm_ips > /dev/null 2>&1; then
