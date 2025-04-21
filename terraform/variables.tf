@@ -25,7 +25,7 @@ variable "ssh_pub_key_path" {
 
 variable "vm_names" {
   type    = list(string)
-  default = ["master-node", "worker-node-1", "worker-node-2"]
+  default = ["master", "slave"]
 }
 
 variable "machine_type" {
