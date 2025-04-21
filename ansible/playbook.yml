@@ -1,0 +1,26 @@
+---
+- name: Setup Kubernetes Master Node
+  hosts: master
+  become: yes
+  tasks:
+    - name: Copy setup_k8s.sh to master
+      copy:
+        src: setup_k8s.sh
+        dest: /tmp/setup_k8s.sh
+        mode: '0755'
+
+    - name: Run setup_k8s.sh on master node
+      shell: /tmp/setup_k8s.sh master
+
+- name: Setup Kubernetes Worker Nodes
+  hosts: workers
+  become: yes
+  tasks:
+    - name: Copy setup_k8s.sh to worker
+      copy:
+        src: setup_k8s.sh
+        dest: /tmp/setup_k8s.sh
+        mode: '0755'
+
+    - name: Run setup_k8s.sh on worker node
+      shell: /tmp/setup_k8s.sh worker

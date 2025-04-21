@@ -1,0 +1,39 @@
+name: Deploy Infrastructure as Code
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  terraform_deploy:
+    name: 🏗️ Deploy Infrastructure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔁 Checkout source code
+        uses: actions/checkout@v3
+
+      - name: 📂 Move to Terraform directory
+        working-directory: terraform
+        run: |
+          terraform init
+          terraform apply -auto-approve
+
+  ansible_provision:
+    name: ⚙️ Provision with Ansible
+    runs-on: ubuntu-latest
+    needs: terraform_deploy
+
+    steps:
+      - name: 🔁 Checkout source code
+        uses: actions/checkout@v3
+
+      - name: 🔧 Make inventory script executable
+        run: chmod +x ansible/generate_inventory.sh
+
+      - name: 📝 Generate inventory
+        run: ./ansible/generate_inventory.sh
+
+      - name: 🚀 Run Ansible Playbook
+        run: ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
