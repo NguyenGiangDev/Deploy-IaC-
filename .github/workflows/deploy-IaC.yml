@@ -9,7 +9,7 @@ jobs:
   deploy_and_provision:
     name: 🚀 Deploy & Provision
     runs-on: self-hosted
-
+    
     steps:
       - name: 🔁 Checkout source code
         uses: actions/checkout@v3
