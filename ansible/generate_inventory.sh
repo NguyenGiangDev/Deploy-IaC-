@@ -12,7 +12,7 @@ fi
 # Lấy output JSON từ Terraform
 output=$(terraform output -json vm_ips)
 
-# Xoá host key cũ trong known_hosts
+# Xoá host key cũ trong known_hosts (để phòng trường hợp lỗi trùng key)
 echo -e "\n🧹 Đang xoá các SSH key cũ trong ~/.ssh/known_hosts..."
 echo "$output" | jq -r '.[]' | while read -r ip; do
   ssh-keygen -R "$ip" >/dev/null 2>&1 && echo "✅ Đã xoá key của $ip"
