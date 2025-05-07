@@ -36,7 +36,7 @@ EOF
 
 sysctl --system
 
-# Cài Docker và containerd
+# Cài Docker 
 apt-get remove -y docker docker-engine docker.io containerd runc
 apt-get update
 apt-get install -y apt-transport-https ca-certificates curl gnupg
