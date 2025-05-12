@@ -10,7 +10,33 @@
         mode: '0755'
 
     - name: Run setup_k8s.sh on master node
-      shell: /tmp/setup_k8s.sh master
+      shell: sudo /tmp/setup_k8s.sh master
+
+    - name: Generate and save kubeadm join command
+      shell: kubeadm token create --print-join-command > /tmp/join_command.sh
+      register: join_command_output
+
+    - name: Set join command as fact
+      set_fact:
+        join_command: "{{ join_command_output.stdout }}"
+
+    - name: Ensure .kube directory exists for ubuntu
+      file:
+        path: /home/ubuntu/.kube
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy kubeconfig to ubuntu user
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/ubuntu/.kube/config
+        remote_src: yes
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
 
 - name: Setup Kubernetes Worker Nodes
   hosts: workers
@@ -23,4 +49,13 @@
         mode: '0755'
 
     - name: Run setup_k8s.sh on worker node
-      shell: /tmp/setup_k8s.sh worker
+      shell: sudo /tmp/setup_k8s.sh worker
+
+    - name: Copy join command from master to worker
+      fetch:
+        src: /tmp/join_command.sh
+        dest: /tmp/join_command.sh
+        flat: yes
+
+    - name: Run join command on worker
+      shell: sudo /tmp/join_command.sh
