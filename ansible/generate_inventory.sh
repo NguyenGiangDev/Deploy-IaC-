@@ -9,7 +9,7 @@ if ! terraform output -json vm_ips > /dev/null 2>&1; then
   exit 1
 fi
 
-# Lấy output JSON từ Terraform
+
 output=$(terraform output -json vm_ips)
 
 # Xoá host key cũ trong known_hosts
