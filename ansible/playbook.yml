@@ -38,6 +38,13 @@
         mode: '0644'
 
 
+    - name: Copy join command to shared location
+      copy:
+        content: "{{ join_command }}"
+        dest: /tmp/join_command.sh
+        mode: '0755'
+
+
 - name: Setup Kubernetes Worker Nodes
   hosts: workers
   become: yes
@@ -52,10 +59,10 @@
       shell: sudo /tmp/setup_k8s.sh worker
 
     - name: Copy join command from master to worker
-      fetch:
+      copy:
         src: /tmp/join_command.sh
         dest: /tmp/join_command.sh
-        flat: yes
+        remote_src: yes
 
     - name: Run join command on worker
       shell: sudo /tmp/join_command.sh
