@@ -42,7 +42,7 @@
   hosts: workers
   become: yes
   vars:
-    master_node: "{{ groups['master'][0] }}"  # Lấy node master đầu tiên
+    master_node: "{{ groups['master'][0] }}"
   tasks:
     - name: Copy setup_k8s.sh to worker
       copy:
