@@ -13,10 +13,10 @@
       shell: sudo /tmp/setup_k8s.sh master
 
     - name: Generate and save kubeadm join command
-      shell: kubeadm token create --print-join-command > /tmp/join_command.sh
+      shell: kubeadm token create --print-join-command
       register: join_command_output
 
-    - name: Set join command as fact
+    - name: Set join command as fact (host-level)
       set_fact:
         join_command: "{{ join_command_output.stdout }}"
 
@@ -38,16 +38,11 @@
         mode: '0644'
 
 
-    - name: Copy join command to shared location
-      copy:
-        content: "{{ join_command }}"
-        dest: /tmp/join_command.sh
-        mode: '0755'
-
-
 - name: Setup Kubernetes Worker Nodes
   hosts: workers
   become: yes
+  vars:
+    master_node: "{{ groups['master'][0] }}"  # Lấy node master đầu tiên
   tasks:
     - name: Copy setup_k8s.sh to worker
       copy:
@@ -58,11 +53,11 @@
     - name: Run setup_k8s.sh on worker node
       shell: sudo /tmp/setup_k8s.sh worker
 
-    - name: Copy join command from master to worker
+    - name: Create join command file on worker from master
       copy:
-        src: /tmp/join_command.sh
+        content: "{{ hostvars[master_node]['join_command'] }}"
         dest: /tmp/join_command.sh
-        remote_src: yes
+        mode: '0755'
 
     - name: Run join command on worker
       shell: sudo /tmp/join_command.sh
