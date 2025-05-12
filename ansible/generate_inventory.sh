@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Di chuyển sang thư mục terraform
+
 cd "$(dirname "$0")/../terraform" || exit
 
 # Kiểm tra output tồn tại
