@@ -23,10 +23,13 @@ variable "ssh_pub_key_path" {
   default = "~/.ssh/my_gcp_key.pub"
 }
 
-variable "vm_names" {
-  type    = list(string)
-  default = ["master-node", "worker-node-1", "worker-node-2", "worker-node-3"]
+variable "vms" {
+  type = map(object({
+    region       = string
+    zone         = string
+  }))
 }
+
 
 variable "machine_type" {
   type    = string

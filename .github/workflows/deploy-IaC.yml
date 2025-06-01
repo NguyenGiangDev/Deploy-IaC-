@@ -9,16 +9,46 @@ jobs:
   deploy_and_provision:
     name: 🚀 Deploy & Provision
     runs-on: self-hosted
-    
+
     steps:
       - name: 🔁 Checkout source code
         uses: actions/checkout@v3
 
-      - name: 📂 Apply Terraform
+      - name: 🛡️ Scan Terraform code with Checkov
+        run: checkov -d ./terraform --framework terraform --quiet --soft-fail false
+
+      - name: 📦 Init Terraform
+        working-directory: terraform
+        run: terraform init
+
+      - name: 🔍 Check for existing VM names and destroy if matched
         working-directory: terraform
         run: |
-          terraform init
-          terraform apply -auto-approve
+          echo "🔍 Checking for existing VM names in state..."
+
+          # Lấy danh sách VM từ tfvars
+          VM_NAMES=$(grep -oP '"[^"]+"\s*=' terraform.tfvars | cut -d'"' -f2)
+
+          FOUND_MATCH=false
+
+          for NAME in $VM_NAMES; do
+            echo "🔍 Checking VM: $NAME ..."
+            if terraform state list | grep "google_compute_instance.vm\\[\"$NAME\"\\]"; then
+              echo "⚠️ VM \"$NAME\" already exists in state."
+              FOUND_MATCH=true
+            fi
+          done
+
+          if [ "$FOUND_MATCH" = true ]; then
+            echo "🧨 Found matching VM(s). Running terraform destroy..."
+            terraform destroy -auto-approve
+          else
+            echo "✅ No matching VM names found in state. Proceeding without destroy."
+          fi
+
+      - name: 📂 Apply Terraform
+        working-directory: terraform
+        run: terraform apply -auto-approve
 
       - name: 🔧 Make inventory script executable
         run: chmod +x ansible/generate_inventory.sh
@@ -28,4 +58,3 @@ jobs:
 
       - name: 🚀 Run Ansible Playbook
         run: ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
-
