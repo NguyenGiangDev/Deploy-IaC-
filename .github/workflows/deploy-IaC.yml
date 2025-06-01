@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 🛡️ Scan Terraform code with Checkov
-        run: checkov -d ./terraform --framework terraform --soft-fail false
+        run: checkov -d ./terraform --framework terraform --soft-fail
 
 
       - name: 📦 Init Terraform
