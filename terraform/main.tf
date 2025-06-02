@@ -16,7 +16,7 @@ resource "google_compute_subnetwork" "subnets" {
   }
 
   name          = "subnet-${each.key}"
-  ip_cidr_range = "10.${substr(md5(each.key), 0, 2)}.0.0/16"
+  ip_cidr_range = format("10.%d.0.0/16", tonumber(substr(md5(each.key), 0, 2), 16))
   network       = google_compute_network.custom_vpc.id
   region        = each.key
 }
