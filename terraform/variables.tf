@@ -45,3 +45,7 @@ variable "disk_size" {
   type    = number
   default = 10
 }
+
+variable "subnets" {
+  type =map(string)
+}

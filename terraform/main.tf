@@ -1,7 +1,7 @@
 provider "google" {
   credentials = file(var.credentials_file)
   project     = var.project
-  region      = "us-central1"  # dummy default, các VM sẽ override
+  region      = "us-central1" # dummy default
 }
 
 resource "google_compute_network" "custom_vpc" {
@@ -9,14 +9,11 @@ resource "google_compute_network" "custom_vpc" {
   auto_create_subnetworks = false
 }
 
-# Tạo subnet cho mỗi region
 resource "google_compute_subnetwork" "subnets" {
-  for_each = {
-    for k, v in var.vms : v.region => v
-  }
+  for_each = var.subnets
 
   name          = "subnet-${each.key}"
-  ip_cidr_range = format("10.%d.0.0/16", tonumber(substr(md5(each.key), 0, 2), 16))
+  ip_cidr_range = each.value
   network       = google_compute_network.custom_vpc.id
   region        = each.key
 }
@@ -66,7 +63,7 @@ resource "google_compute_firewall" "allow-http" {
   network = google_compute_network.custom_vpc.id
 
   allow {
-    protocol = "http"
+    protocol = "tcp"
     ports    = ["80"]
   }
 
