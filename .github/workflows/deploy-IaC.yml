@@ -17,35 +17,13 @@ jobs:
       - name: 🛡️ Scan Terraform code with Checkov
         run: checkov -d ./terraform --framework terraform --soft-fail
 
-
       - name: 📦 Init Terraform
         working-directory: terraform
         run: terraform init
 
-      - name: 🔍 Check for existing VM names and destroy if matched
+      - name: 🔄 Sync Terraform state with existing GCP infrastructure
         working-directory: terraform
-        run: |
-          echo "🔍 Checking for existing VM names in state..."
-
-          # Lấy danh sách VM từ tfvars
-          VM_NAMES=$(grep -oP '"[^"]+"\s*=' terraform.tfvars | cut -d'"' -f2)
-
-          FOUND_MATCH=false
-
-          for NAME in $VM_NAMES; do
-            echo "🔍 Checking VM: $NAME ..."
-            if terraform state list | grep "google_compute_instance.vm\\[\"$NAME\"\\]"; then
-              echo "⚠️ VM \"$NAME\" already exists in state."
-              FOUND_MATCH=true
-            fi
-          done
-
-          if [ "$FOUND_MATCH" = true ]; then
-            echo "🧨 Found matching VM(s). Running terraform destroy..."
-            terraform destroy -auto-approve
-          else
-            echo "✅ No matching VM names found in state. Proceeding without destroy."
-          fi
+        run: terraform refresh
 
       - name: 📂 Apply Terraform
         working-directory: terraform
@@ -59,3 +37,4 @@ jobs:
 
       - name: 🚀 Run Ansible Playbook
         run: ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
+
