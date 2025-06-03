@@ -7,8 +7,8 @@ vms = {
     zone         = "asia-southeast1-a"
   }
   "worker-node-1" = {
-    region       = "us-central1"
-    zone         = "us-central1-a"
+    region       = "asia-southeast1"
+    zone         = "asia-southeast1-a"
   }
 }
 
