@@ -42,7 +42,8 @@ resource "google_compute_instance" "vm_instance" {
     access_config {}
   }
 
-  tags = ["k8s"]
+  # Gán tag k8s cho tất cả, thêm master cho master-node
+  tags = contains([each.key], "master-node") ? ["k8s", "master"] : ["k8s"]
 }
 
 resource "google_compute_firewall" "allow-ssh" {
@@ -68,5 +69,44 @@ resource "google_compute_firewall" "allow-http" {
   }
 
   source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["k8s"]
+}
+
+resource "google_compute_firewall" "allow-k8s-api" {
+  name    = "allow-k8s-api"
+  network = google_compute_network.custom_vpc.id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["6443"]
+  }
+
+  source_ranges = ["10.0.0.0/8"] # Hoặc thay bằng CIDR phù hợp với subnet bạn dùng
+  target_tags   = ["master"]
+}
+
+resource "google_compute_firewall" "allow-weave-tcp" {
+  name    = "allow-weave-tcp"
+  network = google_compute_network.custom_vpc.id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["6783"]
+  }
+
+  source_ranges = ["10.0.0.0/8"]
+  target_tags   = ["k8s"]
+}
+
+resource "google_compute_firewall" "allow-weave-udp" {
+  name    = "allow-weave-udp"
+  network = google_compute_network.custom_vpc.id
+
+  allow {
+    protocol = "udp"
+    ports    = ["6783", "6784"]
+  }
+
+  source_ranges = ["10.0.0.0/8"]
   target_tags   = ["k8s"]
 }
